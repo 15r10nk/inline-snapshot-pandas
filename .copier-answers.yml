@@ -1,0 +1,18 @@
+# Changes here will be overwritten by Copier
+_commit: v0.0.5
+_src_path: git@github.com:15r10nk/project-template.git
+full_coverage: true
+github_user: 15r10nk
+insider_only: true
+module_name: inline_snapshot_pandas
+project_description: pandas integration for inline-snapshot
+project_main: false
+project_name: inline-snapshot-pandas
+python_versions:
+- '3.8'
+- '3.9'
+- '3.10'
+- '3.11'
+- '3.12'
+show_project_logo: false
+use_mkdocs: true
