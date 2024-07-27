@@ -91,6 +91,30 @@ def test_assert_equal():
     )
 ```
 
+## Usage for non-insiders
+
+The version which is currently available on pip provides functions which can be used by non insiders.
+They provides a special `snapshot` function which is implemented as `lambda value: value` and can be used with the normal `assert_*_equal` functions of pandas.
+
+The following code can be executed with the insider an non-insider version:
+
+``` python
+from pandas import DataFrame
+from inline_snapshot_pandas import assert_frame_equal
+
+# importing snapshot from inline_snapshot_pandas is important
+from inline_snapshot_pandas import snapshot
+
+
+def test_assert_equal():
+    df = DataFrame({"col0": [1, 2]})
+
+    assert_frame_equal(
+        df,
+        snapshot(DataFrame([{"col0": 1}, {"col0": 2}])),
+    )
+```
+
 
 <!-- -8<- [start:Feedback] -->
 ## Issues
