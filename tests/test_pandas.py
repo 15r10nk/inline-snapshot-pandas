@@ -3,6 +3,7 @@ from inline_snapshot.extra import raises
 from inline_snapshot_pandas import assert_frame_equal
 from inline_snapshot_pandas import assert_index_equal
 from inline_snapshot_pandas import assert_series_equal
+from inline_snapshot_pandas import setup
 from inline_snapshot_pandas import snapshot as pandas_snapshot
 from pandas import DataFrame
 from pandas import Index
@@ -60,3 +61,8 @@ and can then install the library from the private github repo:
         )
     ):
         pandas_snapshot()
+
+
+def test_setup():
+    # setup does nothing but can be called
+    setup()
