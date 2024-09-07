@@ -21,7 +21,7 @@ dependencies = [
   "pandas",
   "inline-snapshot>=0.12.0"
 ]
-description = 'pandas integration for inline-snapshot'
+description = 'pandas integration for inline-snapshot (insider only)'
 keywords = []
 license = "MIT"
 name = "inline-snapshot-pandas"
