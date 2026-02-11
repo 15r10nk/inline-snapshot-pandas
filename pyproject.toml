@@ -2,6 +2,13 @@
 build-backend = "hatchling.build"
 requires = ["hatchling"]
 
+[dependency-groups]
+dev = [
+  "coverage>=7.6.1",
+  "inline-snapshot[black]>=0.31.1",
+  "pytest>=8.3.5"
+]
+
 [project]
 authors = [
   {name = "Frank Hoffmann", email = "15r10nk@polarbit.de"}
@@ -9,11 +16,12 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy"
 ]
@@ -26,8 +34,8 @@ keywords = []
 license = "MIT"
 name = "inline-snapshot-pandas"
 readme = "README.md"
-requires-python = ">=3.8"
-version = "0.1.1.0.1.0"
+requires-python = ">=3.9"
+version = "0.2.0"
 
 [project.urls]
 Documentation = "https://github.com/15r10nk/inline-snapshot-pandas#readme"
@@ -66,6 +74,16 @@ omit = [
 ]
 parallel = true
 source_pkgs = ["inline_snapshot_pandas", "tests"]
+
+[tool.hatch.envs.cov]
+python = "3.12"
+
+[tool.hatch.envs.cov.scripts]
+github = [
+  "- rm htmlcov/*",
+  "gh run download -n html-report -D htmlcov",
+  "xdg-open htmlcov/index.html"
+]
 
 [tool.hatch.envs.docs]
 dependencies = [

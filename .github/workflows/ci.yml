@@ -5,32 +5,38 @@ on:
   push:
     branches: [main, insiders]
 
+env:
+  TOP: ${{github.workspace}}
+  COVERAGE_PROCESS_START: ${{github.workspace}}/pyproject.toml
+
 jobs:
 
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
         os: [ubuntu-latest, windows-latest, macos-13]
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
       with:
-        python-version: ${{matrix.python-version}}
-        architecture: x64
+        python-version: ${{inputs.python-version}}
         allow-prereleases: true
-    - run: pip install hatch
-    - run: hatch test -cp -py ${{matrix.python-version}}
+    - run: uv run -m ${{ matrix.os == 'ubuntu-latest' && 'coverage run -m' || '' }} pytest
 
     - name: rename coverage files
+      if: matrix.os == 'ubuntu-latest'
       run: |
+        uv run -m coverage combine
         mv .coverage .coverage.${{ matrix.python-version }}.${{matrix.os}}
 
     - name: Upload coverage data
-      uses: actions/upload-artifact@v3
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       with:
-        name: coverage
+        name: coverage-data-${{github.run_id}}-${{ matrix.python-version }}-${{matrix.os}}-${{strategy.job-index}}
         path: .coverage.*
         include-hidden-files: true
 
@@ -40,24 +46,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: '3.11'
         architecture: x64
 
     - name: Download coverage data
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
       with:
-        name: coverage
+        pattern: coverage-data-${{github.run_id}}-*
+        merge-multiple: true
 
     - name: Combine data
       env:
         TOP: ${{github.workspace}}
       run: |
-        rm .coverage.*.windows-latest
-        rm .coverage.*.macos-13
         pip install coverage
         coverage combine
         coverage html
         coverage report --fail-under 100
+
+
+    - name: Upload HTML report if check failed
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      with:
+        name: html-report
+        path: htmlcov
+      if: ${{ failure() }}
