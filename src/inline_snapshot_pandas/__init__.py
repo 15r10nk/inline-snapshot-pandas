@@ -4,7 +4,8 @@ from typing import Optional
 import pandas.testing
 from inline_snapshot import customize_repr
 from inline_snapshot import snapshot
-from inline_snapshot._inline_snapshot import GenericValue
+from inline_snapshot._snapshot.generic_value import GenericValue
+
 
 __all__ = (
     "setup",

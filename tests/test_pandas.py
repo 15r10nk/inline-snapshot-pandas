@@ -109,6 +109,7 @@ def test_assert_equal():
 """
             }
         ),
+        returncode=1,
     )
 
 
@@ -171,7 +172,7 @@ DataFrame.iloc[:, 0] (column name="col0") values are different (50.0 %)
         ["--inline-snapshot=fix"],
         changed_files=snapshot(
             {
-                "test_something.py": """\
+                "tests/test_something.py": """\
 from pandas import DataFrame
 from inline_snapshot_pandas import assert_frame_equal
 from inline_snapshot import snapshot

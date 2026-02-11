@@ -19,9 +19,9 @@ classifiers = [
 ]
 dependencies = [
   "pandas",
-  "inline-snapshot>=0.12.0"
+  "inline-snapshot>=0.31.0"
 ]
-description = 'pandas integration for inline-snapshot (insider only)'
+description = 'pandas integration for inline-snapshot'
 keywords = []
 license = "MIT"
 name = "inline-snapshot-pandas"
@@ -76,7 +76,7 @@ dependencies = [
 scripts.serve = ["mkdocs serve {args}"]
 
 [tool.hatch.envs.hatch-test]
-extra-dependencies = []
+extra-dependencies = ["inline-snapshot[black]"]
 env-vars.TOP = "{root}"
 
 [tool.hatch.envs.hatch-test.scripts]
