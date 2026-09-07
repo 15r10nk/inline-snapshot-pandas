@@ -83,9 +83,7 @@ def test_assert_equal():
         }
     ).run_pytest(
         ["--inline-snapshot=create"],
-        changed_files=snapshot(
-            {
-                "test_pandas.py": """\
+        changed_files=snapshot({"test_pandas.py": """\
 from pandas import DataFrame
 from pandas.testing import assert_frame_equal
 from inline_snapshot import snapshot
@@ -106,9 +104,7 @@ def test_assert_equal():
             )
         ),
     )
-"""
-            }
-        ),
+"""}),
         returncode=1,
     )
 
@@ -125,8 +121,7 @@ def test_dataframp_eq():
 
 
 def test_not_equal():
-    Example(
-        """\
+    Example("""\
 from pandas import DataFrame
 from inline_snapshot_pandas import assert_frame_equal
 from inline_snapshot import snapshot
@@ -140,11 +135,9 @@ def test_assert_equal():
         df,
         snapshot(DataFrame({"col0": [1, 3]})),
     )
-"""
-    ).run_inline(
+""").run_inline(
         raises=(
-            snapshot(
-                """\
+            snapshot("""\
 AssertionError:
 DataFrame.iloc[:, 0] (column name="col0") are different
 
@@ -153,11 +146,9 @@ DataFrame.iloc[:, 0] (column name="col0") values are different (50.0 %)
 [left]:  [1, 2]
 [right]: [1, 3]
 At positional index 1, first diff: 2 != 3\
-"""
-            )
+""")
             if sys.version_info < (3, 9)
-            else snapshot(
-                """\
+            else snapshot("""\
 AssertionError:
 DataFrame.iloc[:, 0] (column name="col0") are different
 
@@ -165,14 +156,11 @@ DataFrame.iloc[:, 0] (column name="col0") values are different (50.0 %)
 [index]: [0, 1]
 [left]:  [1, 2]
 [right]: [1, 3]\
-"""
-            )
+""")
         )
     ).run_inline(
         ["--inline-snapshot=fix"],
-        changed_files=snapshot(
-            {
-                "tests/test_something.py": """\
+        changed_files=snapshot({"tests/test_something.py": """\
 from pandas import DataFrame
 from inline_snapshot_pandas import assert_frame_equal
 from inline_snapshot import snapshot
@@ -186,7 +174,5 @@ def test_assert_equal():
         df,
         snapshot(DataFrame([{"col0": 1}, {"col0": 2}])),
     )
-"""
-            }
-        ),
+"""}),
     )
