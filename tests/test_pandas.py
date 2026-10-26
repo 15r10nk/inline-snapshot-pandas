@@ -79,6 +79,11 @@ def test_pandas_value_defers_different_types():
     assert value.__eq__(Series([1])) is NotImplemented
 
 
+def test_assert_equal_rejects_different_types():
+    with pytest.raises(AssertionError, match="DataFrame Expected type"):
+        assert_frame_equal(DataFrame({"value": [1]}), Series([1]))
+
+
 @requires_parquet
 def test_pandas_external_format(tmp_path):
     format = PandasFormat()
