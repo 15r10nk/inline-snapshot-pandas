@@ -1,4 +1,4 @@
-from typing import Callable, Optional
+from typing import Callable
 
 import pandas
 from inline_snapshot._snapshot.generic_value import GenericValue
@@ -11,11 +11,9 @@ class PandasValue:
         self,
         value,
         compare: Callable[[object, object], bool],
-        repr_function: Optional[Callable[[object], object]] = None,
     ):
         self.value = value
         self.compare = compare
-        self.repr_function = repr_function
 
     def __eq__(self, other):
         if isinstance(other, (GenericValue, SnapshotRefBase)):
@@ -32,7 +30,15 @@ def customize_pandas(value, builder):
     if not isinstance(value, PandasValue):
         return None
 
-    assert value.repr_function is not None
+    if isinstance(value.value, pandas.DataFrame):
+        representation = value.value.to_dict("records")
+    elif isinstance(value.value, pandas.Series):
+        representation = value.value.to_dict()
+    elif isinstance(value.value, pandas.Index):
+        representation = value.value.to_list()
+    else:
+        return None
+
     constructor_name = type(value.value).__name__
     constructor = builder.create_code(
         constructor_name, imports=[ImportFrom("pandas", constructor_name)]
@@ -72,7 +78,7 @@ def customize_pandas(value, builder):
             )
     return builder.create_call(
         constructor,
-        [value.repr_function(value.value)],
+        [representation],
         kwargs,
     )
 

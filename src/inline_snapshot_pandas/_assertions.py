@@ -10,7 +10,7 @@ from inline_snapshot._types import SnapshotRefBase
 from ._pandas import PandasValue
 
 
-def _make_assert_equal(assert_equal, expected_type, repr_function):
+def _make_assert_equal(assert_equal, expected_type):
     @wraps(assert_equal)
     def result(actual, desired=..., *args, **kwargs):
         error: Optional[Exception] = None
@@ -27,10 +27,10 @@ def _make_assert_equal(assert_equal, expected_type, repr_function):
         if not isinstance(desired, (GenericValue, SnapshotRefBase)):
             if desired is not ... and not isinstance(desired, expected_type):
                 assert_equal(actual, desired, *args, **kwargs)
-            desired = PandasValue(desired, compare, repr_function)
+            desired = PandasValue(desired, compare)
             desired = snapshot_arg(desired)
 
-        if not (PandasValue(actual, compare, repr_function) == desired):
+        if not (PandasValue(actual, compare) == desired):
             if error is not None:
                 raise error
             raise AssertionError("Pandas comparison failed")
@@ -41,17 +41,14 @@ def _make_assert_equal(assert_equal, expected_type, repr_function):
 assert_frame_equal = _make_assert_equal(
     pandas.testing.assert_frame_equal,
     pandas.DataFrame,
-    lambda frame: frame.to_dict("records"),
 )
 assert_series_equal = _make_assert_equal(
     pandas.testing.assert_series_equal,
     pandas.Series,
-    lambda series: series.to_dict(),
 )
 assert_index_equal = _make_assert_equal(
     pandas.testing.assert_index_equal,
     pandas.Index,
-    lambda index: index.to_list(),
 )
 
 
