@@ -1,85 +1,12 @@
-import json
 from difflib import SequenceMatcher
-from io import StringIO
 from pathlib import Path
-from typing import Any, Union
+from typing import Union
 
 import pandas
 from inline_snapshot import Format, register_format
 from rich.text import Text
 
 from ._pandas import PandasValue
-
-PandasObject = Union[pandas.DataFrame, pandas.Series, pandas.Index]
-
-
-def _table(value: pandas.DataFrame, *, index: bool = True) -> Any:
-    encoded = value.to_json(
-        orient="table", date_format="iso", date_unit="ns", index=index
-    )
-    assert encoded is not None
-    return json.loads(encoded)
-
-
-def _from_table(value: Any) -> pandas.DataFrame:
-    return pandas.read_json(StringIO(json.dumps(value)), orient="table")
-
-
-def _encode(value: PandasObject) -> dict[str, Any]:
-    if isinstance(value, pandas.DataFrame):
-        return {"kind": "dataframe", "table": _table(value)}
-    if isinstance(value, pandas.Series):
-        return {
-            "kind": "series",
-            "name": value.name,
-            "table": _table(value.to_frame(name="__value__")),
-        }
-    if isinstance(value, pandas.MultiIndex):
-        return {
-            "kind": "multiindex",
-            "names": value.names,
-            "table": _table(value.to_frame(index=False), index=False),
-        }
-    if isinstance(value, pandas.RangeIndex):
-        return {
-            "kind": "rangeindex",
-            "name": value.name,
-            "start": value.start,
-            "stop": value.stop,
-            "step": value.step,
-        }
-    assert isinstance(value, pandas.Index)
-    return {
-        "kind": "index",
-        "name": value.name,
-        "table": _table(
-            pandas.Series(value.array, name="__value__").to_frame(), index=False
-        ),
-    }
-
-
-def _decode(payload: dict[str, Any]) -> PandasObject:
-    kind = payload["kind"]
-    if kind == "dataframe":
-        return _from_table(payload["table"])
-    if kind == "series":
-        result = _from_table(payload["table"])["__value__"]
-        result.name = payload["name"]
-        return result
-    if kind == "multiindex":
-        multiindex = pandas.MultiIndex.from_frame(_from_table(payload["table"]))
-        multiindex.names = payload["names"]
-        return multiindex
-    if kind == "rangeindex":
-        return pandas.RangeIndex(
-            start=payload["start"],
-            stop=payload["stop"],
-            step=payload["step"],
-            name=payload["name"],
-        )
-    assert kind == "index"
-    values = _from_table(payload["table"])["__value__"]
-    return pandas.Index(values.array, name=payload["name"])
 
 
 def _value_repr(value: object) -> str:
@@ -89,37 +16,23 @@ def _value_repr(value: object) -> str:
     return repr(value)
 
 
-def _entries(value: PandasObject) -> list[tuple[str, str]]:
-    if isinstance(value, pandas.DataFrame):
-        return [
-            (f"({index!r}, {column!r})", _value_repr(value.iloc[row, col]))
-            for row, index in enumerate(value.index)
-            for col, column in enumerate(value.columns)
-        ]
-    if isinstance(value, pandas.Series):
-        return [
-            (f"({index!r},)", _value_repr(item))
-            for index, item in zip(value.index, value.array)
-        ]
+def _entries(value: pandas.DataFrame) -> list[tuple[str, str]]:
     return [
-        (f"({position},)", _value_repr(item)) for position, item in enumerate(value)
+        (f"({index!r}, {column!r})", _value_repr(value.iloc[row, col]))
+        for row, index in enumerate(value.index)
+        for col, column in enumerate(value.columns)
     ]
 
 
-def _metadata(value: PandasObject) -> tuple[object, ...]:
-    if isinstance(value, pandas.DataFrame):
-        return value.shape, tuple(map(str, value.dtypes))
-    if isinstance(value, pandas.Series):
-        return value.shape, str(value.dtype), value.name
-    return value.shape, str(value.dtype), value.names
+def _metadata(value: pandas.DataFrame) -> tuple[object, ...]:
+    return value.shape, tuple(map(str, value.dtypes))
 
 
-def _pandas_text(value: PandasObject) -> str:
-    rendered = repr(value) if isinstance(value, pandas.Index) else value.to_string()
-    return f"{type(value).__name__}:\n{rendered}"
+def _pandas_text(value: pandas.DataFrame) -> str:
+    return f"DataFrame:\n{value.to_string()}"
 
 
-def _pandas_diff(original: PandasObject, new: PandasObject) -> Text:
+def _pandas_diff(original: pandas.DataFrame, new: pandas.DataFrame) -> Text:
     result = Text()
 
     def add_line(*parts: tuple[str, str]) -> None:
@@ -128,9 +41,9 @@ def _pandas_diff(original: PandasObject, new: PandasObject) -> Text:
         for text, style in parts:
             result.append(text, style)
 
-    if type(original) is not type(new) or _metadata(original) != _metadata(new):
-        add_line((f"- {type(original).__name__}: {_metadata(original)!r}", "red"))
-        add_line((f"+ {type(new).__name__}: {_metadata(new)!r}", "green"))
+    if _metadata(original) != _metadata(new):
+        add_line((f"- DataFrame: {_metadata(original)!r}", "red"))
+        add_line((f"+ DataFrame: {_metadata(new)!r}", "green"))
 
     original_entries = _entries(original)
     new_entries = _entries(new)
@@ -166,27 +79,24 @@ def _pandas_diff(original: PandasObject, new: PandasObject) -> Text:
 
 
 @register_format
-class PandasFormat(Format[PandasObject]):
-    """Store Pandas objects as non-pickled, human-readable JSON files."""
+class PandasFormat(Format[pandas.DataFrame]):
+    """Store Pandas DataFrames as Parquet files."""
 
-    suffix = ".pandas.json"
+    suffix = ".parquet"
 
     def is_format_for(self, value: object) -> bool:
-        return isinstance(
-            value, (PandasValue, pandas.DataFrame, pandas.Series, pandas.Index)
-        )
-
-    def encode(self, value: Union[PandasObject, PandasValue], path: Path) -> None:
         if isinstance(value, PandasValue):
             value = value.value
-        assert isinstance(value, (pandas.DataFrame, pandas.Series, pandas.Index))
-        with path.open("w", encoding="utf-8", newline="\n") as file:
-            json.dump(_encode(value), file, ensure_ascii=False, indent=2)
-            file.write("\n")
+        return isinstance(value, pandas.DataFrame)
 
-    def decode(self, path: Path) -> PandasObject:
-        with path.open(encoding="utf-8") as file:
-            return _decode(json.load(file))
+    def encode(self, value: Union[pandas.DataFrame, PandasValue], path: Path) -> None:
+        if isinstance(value, PandasValue):
+            value = value.value
+        assert isinstance(value, pandas.DataFrame)
+        value.to_parquet(path)
+
+    def decode(self, path: Path) -> pandas.DataFrame:
+        return pandas.read_parquet(path)
 
     def rich_show(self, path: Path) -> str:
         return _pandas_text(self.decode(path))

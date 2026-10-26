@@ -44,6 +44,9 @@ dependencies = [
   "pandas>=2.2.3; python_version >= '3.13' and python_version < '3.14'",
   "pandas>=2.3.3; python_version >= '3.14' and python_version < '3.15'",
   "pandas>=3.1.0; python_version >= '3.15'",
+  "pyarrow>=19; implementation_name == 'cpython' and python_version < '3.14'",
+  "pyarrow>=22; implementation_name == 'cpython' and python_version >= '3.14' and python_version < '3.15'",
+  "pyarrow>=26; implementation_name == 'cpython' and python_version >= '3.15'",
   "rich",
 ]
 description = "Pandas integration for inline-snapshot"

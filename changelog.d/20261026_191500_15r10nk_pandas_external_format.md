@@ -1,7 +1,7 @@
 ### Added
 
-- Added human-readable external snapshots for Pandas DataFrames, Series, and
-  indices, including concise colorized value diffs.
+- Added Parquet external snapshots for Pandas DataFrames, including concise
+  colorized value diffs.
 
 ### Changed
 

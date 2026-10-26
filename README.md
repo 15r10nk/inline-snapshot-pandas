@@ -52,8 +52,7 @@ from inline_snapshot_pandas import setup
 setup()
 ```
 
-Pandas objects can also be stored in external, human-readable `.pandas.json`
-snapshot files:
+Pandas objects can also be stored in external `.parquet` snapshot files:
 
 ```python
 from inline_snapshot import external
@@ -65,9 +64,10 @@ def test_frame():
     assert_frame_equal(DataFrame({"score": [5, 6]}), external())
 ```
 
-Create the external snapshot with `pytest --inline-snapshot=create`. DataFrames,
-Series, regular indices, range indices, and multi-indices are supported. Reports
-show changed, inserted, and deleted labeled values instead of a binary diff.
+Create the external snapshot with `pytest --inline-snapshot=create`. External
+snapshots currently support DataFrames. Although the snapshots use the binary
+Parquet format, reports show changed, inserted, and deleted labeled values
+instead of a binary diff.
 
 <!-- -8<- [start:Feedback] -->
 
