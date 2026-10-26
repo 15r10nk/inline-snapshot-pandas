@@ -5,10 +5,15 @@ ci:
   autoupdate_schedule: monthly
 
 repos:
+
+- repo: https://github.com/15r10nk/project-template
+  rev: v0.4.3
+  hooks:
+  - id: copier-enforce
+
+
 - hooks:
-  - id: check-yaml
   - id: check-ast
-  - id: check-docstring-first
   - id: check-merge-conflict
   - id: trailing-whitespace
   - id: mixed-line-ending
@@ -17,7 +22,7 @@ repos:
   - id: check-json
   - id: end-of-file-fixer
   repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
 - hooks:
   - args:
     - --in-place
@@ -29,45 +34,69 @@ repos:
   rev: v2.3.1
 
 - repo: https://github.com/asottile/setup-cfg-fmt
-  rev: v2.5.0
+  rev: v2.8.0
   hooks:
   - id: setup-cfg-fmt
 
-- repo: https://github.com/asottile/reorder-python-imports
-  rev: v3.13.0
+- repo: https://github.com/pycqa/isort
+  rev: 6.0.1
   hooks:
-  - args:
-    - --py38-plus
-    id: reorder-python-imports
+  - id: isort
+    name: isort (python)
+
 - hooks:
   - args:
     - --py38-plus
     id: pyupgrade
   repo: https://github.com/asottile/pyupgrade
-  rev: v3.17.0
+  rev: v3.21.2
 - hooks:
   - id: black
   repo: https://github.com/psf/black
-  rev: 24.8.0
+  rev: 25.1.0
 - hooks:
   - id: blacken-docs
     args: [-l80]
   repo: https://github.com/adamchainz/blacken-docs
-  rev: 1.18.0
+  rev: 1.19.1
 
 
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.14.0
+  rev: v2.15.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix, --indent, '2']
-  - id: pretty-format-toml
-    exclude: ^poetry.lock$
-    args: [--autofix]
 
 - hooks:
   - id: commitizen
     stages:
     - commit-msg
   repo: https://github.com/commitizen-tools/commitizen
-  rev: v3.28.0
+  rev: v4.8.3
+
+
+# - repo: https://github.com/PyCQA/docformatter
+#   rev: v1.7.5
+#   hooks:
+#   - id: docformatter
+
+- repo: https://github.com/abravalheri/validate-pyproject
+  rev: v0.24.1
+  hooks:
+  - id: validate-pyproject
+
+- repo: https://github.com/henryiii/validate-pyproject-schema-store
+  rev: 2025.04.28
+  hooks:
+  - id: validate-pyproject
+
+
+- repo: https://github.com/rhysd/actionlint
+  rev: v1.7.7
+  hooks:
+  - id: actionlint
+
+- repo: https://github.com/crate-ci/typos
+  rev: v1.47.0
+  hooks:
+  - id: typos
