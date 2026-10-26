@@ -3,15 +3,21 @@ build-backend = "hatchling.build"
 requires = ["hatchling"]
 
 [dependency-groups]
+cog = [
+  "cogapp>=3.4.1",
+]
 dev = [
+  "commitizen==4.16.5; python_version >= '3.10'",
   "coverage>=7.6.1",
-  "inline-snapshot[black]>=0.31.1",
-  "pytest>=8.3.5"
+  "inline-snapshot[black]>=0.36.1",
+  "pandas-stubs",
+  "pytest>=8.3.5",
+  "scriv==1.8.0; python_version >= '3.10'",
 ]
 
 [project]
 authors = [
-  {name = "Frank Hoffmann", email = "15r10nk@polarbit.de"}
+  {name = "Frank Hoffmann", email = "15r10nk@polarbit.de"},
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -22,20 +28,36 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy"
+  "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = [
-  "pandas",
-  "inline-snapshot>=0.31.0"
+  "inline-snapshot>=0.36.1",
+  "numpy>=1.23.2; python_version < '3.12'",
+  "numpy>=1.26.0; python_version >= '3.12' and python_version < '3.13'",
+  "numpy>=2.1.0; python_version >= '3.13' and python_version < '3.14'",
+  "numpy>=2.3.0; python_version >= '3.14' and python_version < '3.15'",
+  "numpy>=2.5.4; python_version >= '3.15'",
+  "pandas>=1.5.3; python_version < '3.12'",
+  "pandas>=2.1.1; python_version >= '3.12' and python_version < '3.13'",
+  "pandas>=2.2.3; python_version >= '3.13' and python_version < '3.14'",
+  "pandas>=2.3.3; python_version >= '3.14' and python_version < '3.15'",
+  "pandas>=3.1.0; python_version >= '3.15'",
+  "pyarrow>=19; implementation_name == 'cpython' and python_version < '3.14'",
+  "pyarrow>=22; implementation_name == 'cpython' and python_version >= '3.14' and python_version < '3.15'",
+  "pyarrow>=26; implementation_name == 'cpython' and python_version >= '3.15'",
+  "rich",
 ]
-description = 'pandas integration for inline-snapshot'
-keywords = []
+description = "Pandas integration for inline-snapshot"
 license = "MIT"
 name = "inline-snapshot-pandas"
 readme = "README.md"
 requires-python = ">=3.9"
 version = "0.2.0"
+
+[project.entry-points.inline_snapshot]
+pandas = "inline_snapshot_pandas._plugin"
 
 [project.urls]
 Documentation = "https://github.com/15r10nk/inline-snapshot-pandas#readme"
@@ -43,68 +65,68 @@ Issues = "https://github.com/15r10nk/inline-snapshot-pandas/issues"
 Source = "https://github.com/15r10nk/inline-snapshot-pandas"
 
 [tool.black]
-target-version = ["py38"]
+target-version = ["py39"]
 
 [tool.commitizen]
-changelog_incremental = true
 major_version_zero = true
 tag_format = "v$major.$minor.$patch$prerelease"
-update_changelog_on_bump = true
-version_files = [
-  "src/inline_snapshot_pandas/__init__.py:version"
-]
+version_scheme = "semver2"
 version_provider = "pep621"
+
+[tool.scriv]
+format = "md"
 
 [tool.coverage.paths]
 inline_snapshot_pandas = ["src/inline_snapshot_pandas", "*/inline-snapshot-pandas/src/inline_snapshot_pandas"]
 tests = ["tests", "*/inline-snapshot-pandas/tests"]
 
 [tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:"
-]
+exclude_lines = ["pragma: no cover", "assert False", "raise NotImplemented", "\\.\\.\\."]
 
 [tool.coverage.run]
 branch = true
 data_file = "$TOP/.coverage"
-omit = [
-  "src/inline_snapshot_pandas/__about__.py"
-]
 parallel = true
-source_pkgs = ["inline_snapshot_pandas", "tests"]
+source_pkgs = ["inline_snapshot_pandas"]
 
-[tool.hatch.envs.cov]
-python = "3.12"
-
-[tool.hatch.envs.cov.scripts]
-github = [
-  "- rm htmlcov/*",
-  "gh run download -n html-report -D htmlcov",
-  "xdg-open htmlcov/index.html"
-]
-
-[tool.hatch.envs.docs]
+[tool.hatch.envs.default]
 dependencies = [
-  "mkdocs>=1.4.2",
-  "mkdocs-material[imaging]>=8.5.10",
-  "mkdocstrings>=0.19.0"
+  "pytest",
+  "pytest-xdist",
 ]
-scripts.serve = ["mkdocs serve {args}"]
+scripts.test = "pytest {args:tests}"
 
 [tool.hatch.envs.hatch-test]
-extra-dependencies = ["inline-snapshot[black]"]
+dependencies = [
+  "coverage[toml]>=6.5",
+  "coverage-enable-subprocess",
+  "inline-snapshot[black]",
+  "pytest",
+  "pytest-xdist",
+]
+default-args = ["tests"]
 env-vars.TOP = "{root}"
 
 [tool.hatch.envs.hatch-test.scripts]
-cov-combine = "coverage combine"
-cov-report = [
+run = "coverage run -m pytest {args}"
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
+
+[tool.hatch.envs.cov]
+dependencies = ["coverage[toml]>=6.5"]
+detached = true
+env-vars.TOP = "{root}"
+scripts.test = [
+  "- coverage erase",
+  "hatch test --cover-quiet {args}",
+  "coverage combine",
   "coverage html",
-  "coverage report --fail-under 100"
+  "coverage report --fail-under 100",
 ]
-run = "pytest{env:HATCH_TEST_ARGS:} {args}"
-run-cov = "coverage run -m pytest{env:HATCH_TEST_ARGS:} {args}"
 
 [tool.hatch.version]
 path = "src/inline_snapshot_pandas/__init__.py"
+
+[tool.isort]
+profile = "black"

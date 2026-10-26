@@ -1,6 +1,10 @@
 # Changes here will be overwritten by Copier
-_commit: v0.0.5
+_commit: v0.4.3
 _src_path: git@github.com:15r10nk/project-template.git
+author_email: 15r10nk@polarbit.de
+author_name: Frank Hoffmann
+discord_id: ''
+discord_invite_id: ''
 full_coverage: true
 github_user: 15r10nk
 insider_only: true
@@ -8,11 +12,16 @@ module_name: inline_snapshot_pandas
 project_description: pandas integration for inline-snapshot
 project_main: false
 project_name: inline-snapshot-pandas
+pypy_versions:
+- pypy3.11
 python_versions:
-- '3.8'
 - '3.9'
 - '3.10'
 - '3.11'
 - '3.12'
+- '3.13'
+- '3.14'
+- '3.15'
 show_project_logo: false
-use_mkdocs: true
+test_lowest_deps: true
+use_mkdocs: false

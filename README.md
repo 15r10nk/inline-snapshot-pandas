@@ -1,96 +1,83 @@
 <!-- -8<- [start:Header] -->
 
+# inline-snapshot-pandas
 
 ![ci](https://github.com/15r10nk/inline-snapshot-pandas/actions/workflows/ci.yml/badge.svg?branch=main)
-[![Docs](https://img.shields.io/badge/docs-mkdocs-green)](https://15r10nk.github.io/inline-snapshot-pandas/)
 [![pypi version](https://img.shields.io/pypi/v/inline-snapshot-pandas.svg)](https://pypi.org/project/inline-snapshot-pandas/)
 ![Python Versions](https://img.shields.io/pypi/pyversions/inline-snapshot-pandas)
-![PyPI - Downloads](https://img.shields.io/pypi/dw/inline-snapshot-pandas)
-[![coverage](https://img.shields.io/badge/coverage-100%25-blue)](https://15r10nk.github.io/inline-snapshot-pandas/contributing/#coverage)
+[![PyPI - Downloads](https://img.shields.io/pypi/dw/inline-snapshot-pandas)](https://pypacktrends.com/?packages=inline-snapshot-pandas&time_range=2years)
+[![coverage](https://img.shields.io/badge/coverage-100%25-blue)](https://15r10nk.github.io/inline-snapshot-pandas/latest/contributing/#coverage)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/15r10nk)](https://github.com/sponsors/15r10nk)
 
 <!-- -8<- [end:Header] -->
 
+Pandas integration for [inline-snapshot](https://github.com/15r10nk/inline-snapshot).
+
 ## Installation
 
-``` bash
-pip install inline-snapshot-pandas
+This project is currently available to sponsors through the private insiders
+repository:
+
+```bash
+pip install git+ssh://git@github.com/15r10nk-insiders/inline-snapshot-pandas.git@insiders
 ```
 
 ## Usage
 
-This packages provides special `assert_(frame|series|index)_equal` implementation which accept a snapshot as second argument.
+The package provides snapshot-aware versions of Pandas' equality assertions:
 
-``` python
-from pandas import DataFrame
-from inline_snapshot_pandas import assert_frame_equal
+```python
 from inline_snapshot import snapshot
+from inline_snapshot_pandas import assert_frame_equal
+from pandas import DataFrame
 
 
-def test_assert_equal():
-    df = DataFrame({"col0": [1, 2]})
-
-    assert_frame_equal(df, snapshot())
+def test_frame():
+    assert_frame_equal(DataFrame({"score": [5, 6]}), snapshot())
 ```
+
+Create the missing inline snapshot with:
 
 ```bash
 pytest --inline-snapshot=create
 ```
 
-``` python
-from pandas import DataFrame
-from inline_snapshot_pandas import assert_frame_equal
-from inline_snapshot import snapshot
+The available helpers are `assert_frame_equal`, `assert_series_equal`, and
+`assert_index_equal`. Alternatively, call `setup()` from `conftest.py` to patch
+the corresponding functions in `pandas.testing`:
 
-
-def test_assert_equal():
-    df = DataFrame({"col0": [1, 2]})
-
-    assert_frame_equal(
-        df,
-        snapshot(DataFrame([{"col0": 1}, {"col0": 2}])),
-    )
-```
-
-Another way to use it is to call `setup()` in `conftest.py`, which replaces the implementation which pandas uses.
-
-``` python
+```python
 from inline_snapshot_pandas import setup
 
 setup()
 ```
 
-You can then use implementation from pandas with snapshots.
+Pandas objects can also be stored in external `.parquet` snapshot files:
 
-``` python
+```python
+from inline_snapshot import external
+from inline_snapshot_pandas import assert_frame_equal
 from pandas import DataFrame
-from pandas.testing import assert_frame_equal
-from inline_snapshot import snapshot
 
 
-def test_assert_equal():
-    df = DataFrame({"col0": [1, 2], "col1": [1, 5j], "col3": ["a", "b"]})
-
-    # the second argument can be a snapshot
-    assert_frame_equal(
-        df,
-        snapshot(
-            DataFrame(
-                [
-                    {"col0": 1, "col1": (1 + 0j), "col3": "a"},
-                    {"col0": 2, "col1": 5j, "col3": "b"},
-                ]
-            )
-        ),
-    )
+def test_frame():
+    assert_frame_equal(DataFrame({"score": [5, 6]}), external())
 ```
 
+Create the external snapshot with `pytest --inline-snapshot=create`. External
+snapshots currently support DataFrames. Although the snapshots use the binary
+Parquet format, reports show changed, inserted, and deleted labeled values
+instead of a binary diff.
+
 <!-- -8<- [start:Feedback] -->
+
 ## Issues
 
 If you encounter any problems, please [report an issue](https://github.com/15r10nk/inline-snapshot-pandas/issues) along with a detailed description.
+
 <!-- -8<- [end:Feedback] -->
 
 ## License
 
-Distributed under the terms of the [MIT](http://opensource.org/licenses/MIT) license, "inline-snapshot-pandas" is free and open source software.
+Distributed under the terms of the [MIT](http://opensource.org/licenses/MIT)
+license, `inline-snapshot-pandas` is free and open source software.

@@ -1,15 +1,31 @@
+import os
+import platform
 import sys
 
+import pandas
+import pytest
 from inline_snapshot import snapshot
-from inline_snapshot.extra import raises
 from inline_snapshot.testing import Example
-from inline_snapshot_pandas import assert_frame_equal
-from inline_snapshot_pandas import assert_index_equal
-from inline_snapshot_pandas import assert_series_equal
-from inline_snapshot_pandas import snapshot as pandas_snapshot
-from pandas import DataFrame
-from pandas import Index
-from pandas import Series
+from pandas import DataFrame, Index, Series
+from rich.text import Text
+
+from inline_snapshot_pandas import (
+    assert_frame_equal,
+    assert_index_equal,
+    assert_series_equal,
+    setup,
+)
+from inline_snapshot_pandas._format import PandasFormat, _pandas_diff
+from inline_snapshot_pandas._pandas import PandasValue
+
+requires_snapshot_updates = pytest.mark.skipif(
+    platform.python_implementation() == "PyPy" and "PYTEST_XDIST_WORKER" in os.environ,
+    reason="inline-snapshot disables snapshot updates with xdist on PyPy",
+)
+requires_parquet = pytest.mark.skipif(
+    platform.python_implementation() != "CPython",
+    reason="PyArrow does not provide PyPy wheels",
+)
 
 
 def test_assert_equal():
@@ -18,7 +34,7 @@ def test_assert_equal():
     # the second argument can be a snapshot
     assert_frame_equal(
         df,
-        pandas_snapshot(
+        snapshot(
             DataFrame(
                 [
                     {"col0": 1, "col1": (1 + 0j), "col3": "a"},
@@ -32,7 +48,7 @@ def test_assert_equal():
     assert_frame_equal(df, df)
 
     # for Index
-    index = Index(range(5))
+    index = Index([0, 1, 2, 3, 4])
     assert_index_equal(index, snapshot(Index([0, 1, 2, 3, 4])))
 
     # for Series
@@ -43,7 +59,7 @@ def test_assert_equal():
 def test_assert_equal_twice():
     df = DataFrame({"col0": [1, 2], "col1": [1, 5j], "col3": ["a", "b"]})
 
-    s = pandas_snapshot(
+    s = snapshot(
         DataFrame(
             [
                 {"col0": 1, "col1": (1 + 0j), "col3": "a"},
@@ -57,6 +73,124 @@ def test_assert_equal_twice():
     assert_frame_equal(df, s)
 
 
+def test_pandas_value_defers_different_types():
+    value = PandasValue(DataFrame({"value": [1]}), lambda left, right: True)
+
+    assert value.__eq__(Series([1])) is NotImplemented
+
+
+def test_assert_equal_rejects_different_types():
+    with pytest.raises(AssertionError, match="DataFrame Expected type"):
+        assert_frame_equal(DataFrame({"value": [1]}), Series([1]))
+
+
+@requires_parquet
+def test_pandas_external_format(tmp_path):
+    format = PandasFormat()
+    path = tmp_path / "frame.parquet"
+    changed_path = tmp_path / "changed.parquet"
+    frame = DataFrame(
+        {"name": ["Ada", "Grace"], "score": [5, 6]},
+        index=Index([10, 20], name="id"),
+    )
+
+    assert format.is_format_for(frame)
+    assert format.is_format_for(PandasValue(frame, lambda left, right: True))
+    assert not format.is_format_for(Series([5, 6]))
+    assert not format.is_format_for(
+        PandasValue(Series([5, 6]), lambda left, right: True)
+    )
+    assert not format.is_format_for({"score": [5, 6]})
+
+    format.encode(frame, path)
+    assert_frame_equal(format.decode(path), frame)
+    assert path.read_bytes().startswith(b"PAR1")
+    assert format.rich_show(path).startswith("DataFrame:\n")
+
+    changed = frame.copy()
+    changed.loc[20, "score"] = 2
+    format.encode(changed, changed_path)
+    frame_diff = format.rich_diff(path, changed_path)
+    assert isinstance(frame_diff, Text)
+    assert frame_diff.plain == "~ (20, 'score'): 6 -> 2"
+    assert {span.style for span in frame_diff.spans} >= {"red", "green"}
+
+
+def test_pandas_value_diffs():
+    original = DataFrame({"value": [1, 2]}, index=["a", "b"])
+    changed = DataFrame({"value": [0, 1, 3]}, index=["x", "a", "b"])
+    assert (
+        _pandas_diff(original, changed).plain
+        == """\
+- DataFrame: ((2, 1), ('int64',))
++ DataFrame: ((3, 1), ('int64',))
++ ('x', 'value'): 0
+~ ('b', 'value'): 2 -> 3"""
+    )
+    assert "- ('x', 'value'): 0" in _pandas_diff(changed, original).plain
+
+    original_frame = DataFrame({"x": [1]}, index=["a"])
+    changed_frame = DataFrame({"x": [2]}, index=["b"])
+    assert (
+        _pandas_diff(original_frame, changed_frame).plain
+        == "~ ('a', 'x') -> ('b', 'x'): 1 -> 2"
+    )
+
+
+def test_setup_functions(monkeypatch):
+    monkeypatch.setattr(pandas.testing, "assert_frame_equal", None)
+    monkeypatch.setattr(pandas.testing, "assert_series_equal", None)
+    monkeypatch.setattr(pandas.testing, "assert_index_equal", None)
+
+    setup()
+
+    assert pandas.testing.assert_frame_equal is assert_frame_equal
+    assert pandas.testing.assert_series_equal is assert_series_equal
+    assert pandas.testing.assert_index_equal is assert_index_equal
+
+
+@requires_snapshot_updates
+@requires_parquet
+def test_external_snapshot(tmp_path):
+    format = PandasFormat()
+    path = tmp_path / "frame.parquet"
+    format.encode(DataFrame({"score": [5, 6]}), path)
+
+    Example(
+        """\
+from inline_snapshot import external
+from inline_snapshot_pandas import assert_frame_equal
+from pandas import DataFrame
+
+
+def test_frame():
+    assert_frame_equal(DataFrame({"score": [5, 6]}), external())
+"""
+    ).run_inline(
+        ["--inline-snapshot=create"],
+        changed_files={
+            ".inline-snapshot/files_using_external.txt": """\
+# this file is generated by inline-snapshot and requires no manual edits (https://15r10nk.github.io/inline-snapshot/latest/external/external/#cleaning-up-old-externals)
+tests/test_something.py
+""",
+            "tests/__inline_snapshot__/test_something/test_frame/e3e70682-c209-4cac-a29f-6fbed82c07cd.parquet": path.read_bytes(),
+            "tests/test_something.py": """\
+from inline_snapshot import external
+from inline_snapshot_pandas import assert_frame_equal
+from pandas import DataFrame
+
+
+def test_frame():
+    assert_frame_equal(
+        DataFrame({"score": [5, 6]}),
+        external("uuid:e3e70682-c209-4cac-a29f-6fbed82c07cd.parquet"),
+    )
+""",
+        },
+    ).run_inline()
+
+
+@requires_snapshot_updates
 def test_setup():
 
     Example(
@@ -110,20 +244,18 @@ def test_assert_equal():
             }
         ),
         returncode=1,
+        outcomes={"passed": 1, "errors": 1},
     )
 
 
 def test_dataframp_eq():
     df = DataFrame({"col0": [1, 2], "col1": [1, 5j], "col3": ["a", "b"]})
 
-    with raises(
-        snapshot(
-            "ValueError: The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all()."
-        )
-    ):
+    with pytest.raises(ValueError, match="truth value of a DataFrame is ambiguous"):
         assert df == df
 
 
+@requires_snapshot_updates
 def test_not_equal():
     Example(
         """\
@@ -167,7 +299,8 @@ DataFrame.iloc[:, 0] (column name="col0") values are different (50.0 %)
 [right]: [1, 3]\
 """
             )
-        )
+        ),
+        reported_categories={"fix"},
     ).run_inline(
         ["--inline-snapshot=fix"],
         changed_files=snapshot(
