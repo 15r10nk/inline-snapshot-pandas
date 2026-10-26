@@ -37,10 +37,43 @@ def customize_pandas(value, builder):
     constructor = builder.create_code(
         constructor_name, imports=[ImportFrom("pandas", constructor_name)]
     )
+    kwargs = {}
+    if isinstance(value.value, pandas.DataFrame):
+        index = value.value.index
+        is_default_index = (
+            isinstance(index, pandas.RangeIndex)
+            and index.start == 0
+            and index.stop == len(value.value)
+            and index.step == 1
+            and index.name is None
+        )
+        if not is_default_index:
+            if isinstance(index, pandas.MultiIndex):
+                index_constructor = builder.create_code(
+                    "MultiIndex.from_tuples",
+                    imports=[ImportFrom("pandas", "MultiIndex")],
+                )
+                index_args = [index.to_list()]
+                index_kwargs = {"names": index.names}
+            elif isinstance(index, pandas.RangeIndex):
+                index_constructor = builder.create_code(
+                    "RangeIndex", imports=[ImportFrom("pandas", "RangeIndex")]
+                )
+                index_args = [index.start, index.stop, index.step]
+                index_kwargs = {"name": index.name}
+            else:
+                index_constructor = builder.create_code(
+                    "Index", imports=[ImportFrom("pandas", "Index")]
+                )
+                index_args = [index.to_list()]
+                index_kwargs = {"name": index.name}
+            kwargs["index"] = builder.create_call(
+                index_constructor, index_args, index_kwargs
+            )
     return builder.create_call(
         constructor,
         [value.repr_function(value.value)],
-        {},
+        kwargs,
     )
 
 
