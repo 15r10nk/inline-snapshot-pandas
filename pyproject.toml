@@ -34,7 +34,16 @@ classifiers = [
 ]
 dependencies = [
   "inline-snapshot>=0.36.1",
-  "pandas>=1.5.3",
+  "numpy>=1.23.2; python_version < '3.12'",
+  "numpy>=1.26.0; python_version >= '3.12' and python_version < '3.13'",
+  "numpy>=2.1.0; python_version >= '3.13' and python_version < '3.14'",
+  "numpy>=2.3.0; python_version >= '3.14' and python_version < '3.15'",
+  "numpy>=2.5.4; python_version >= '3.15'",
+  "pandas>=1.5.3; python_version < '3.12'",
+  "pandas>=2.1.1; python_version >= '3.12' and python_version < '3.13'",
+  "pandas>=2.2.3; python_version >= '3.13' and python_version < '3.14'",
+  "pandas>=2.3.3; python_version >= '3.14' and python_version < '3.15'",
+  "pandas>=3.1.0; python_version >= '3.15'",
   "rich",
 ]
 description = "Pandas integration for inline-snapshot"
