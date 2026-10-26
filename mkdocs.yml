@@ -1,8 +1,0 @@
-site_name: inline-snapshot-pandas
-site_url: https://15r10nk.github.io/inline-snapshot-pandas/
-repo_url: https://github.com/15r10nk/inline-snapshot-pandas
-theme:
-  name: material
-nav:
-- Home: index.md
-- Contributing: contributing.md

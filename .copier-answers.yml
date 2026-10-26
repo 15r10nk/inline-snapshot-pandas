@@ -24,4 +24,4 @@ python_versions:
 - '3.15'
 show_project_logo: false
 test_lowest_deps: true
-use_mkdocs: true
+use_mkdocs: false

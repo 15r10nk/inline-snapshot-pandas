@@ -57,7 +57,7 @@ version = "0.2.0"
 pandas = "inline_snapshot_pandas._plugin"
 
 [project.urls]
-Documentation = "https://15r10nk.github.io/inline-snapshot-pandas/latest/"
+Documentation = "https://github.com/15r10nk/inline-snapshot-pandas#readme"
 Issues = "https://github.com/15r10nk/inline-snapshot-pandas/issues"
 Source = "https://github.com/15r10nk/inline-snapshot-pandas"
 
@@ -109,17 +109,6 @@ run = "coverage run -m pytest {args}"
 
 [[tool.hatch.envs.hatch-test.matrix]]
 python = ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
-
-[tool.hatch.envs.docs]
-dependencies = [
-  "mike>=2",
-  "mkdocs>=1.4.2",
-  "mkdocs-material[imaging]>=8.5.10",
-  "mkdocstrings>=0.19.0",
-]
-scripts.build = "mkdocs build {args}"
-scripts.deploy = "mike {args}"
-scripts.serve = "mkdocs serve {args}"
 
 [tool.hatch.envs.cov]
 dependencies = ["coverage[toml]>=6.5"]
