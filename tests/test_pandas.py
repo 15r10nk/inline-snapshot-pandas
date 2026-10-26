@@ -73,6 +73,12 @@ def test_assert_equal_twice():
     assert_frame_equal(df, s)
 
 
+def test_pandas_value_defers_different_types():
+    value = PandasValue(DataFrame({"value": [1]}), lambda left, right: True)
+
+    assert value.__eq__(Series([1])) is NotImplemented
+
+
 @requires_parquet
 def test_pandas_external_format(tmp_path):
     format = PandasFormat()
