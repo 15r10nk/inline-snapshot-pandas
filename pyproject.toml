@@ -11,7 +11,7 @@ dev = [
 
 [project]
 authors = [
-  {name = "Frank Hoffmann", email = "15r10nk@polarbit.de"}
+  { name = "Frank Hoffmann", email = "15r10nk@polarbit.de" }
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -94,8 +94,8 @@ dependencies = [
 scripts.serve = ["mkdocs serve {args}"]
 
 [tool.hatch.envs.hatch-test]
-extra-dependencies = ["inline-snapshot[black]"]
 env-vars.TOP = "{root}"
+extra-dependencies = ["inline-snapshot[black]"]
 
 [tool.hatch.envs.hatch-test.scripts]
 cov-combine = "coverage combine"
