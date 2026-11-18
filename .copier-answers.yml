@@ -12,8 +12,7 @@ module_name: inline_snapshot_pandas
 project_description: pandas integration for inline-snapshot
 project_main: false
 project_name: inline-snapshot-pandas
-pypy_versions:
-- pypy3.11
+pypy_versions: []
 python_versions:
 - '3.9'
 - '3.10'
