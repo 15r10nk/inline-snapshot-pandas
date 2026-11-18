@@ -1,5 +1,5 @@
 name: General Setup
-description: checkout & setup python
+description: Set up uv and install Python
 inputs:
   python-version:  # id of input
     description: the python version to use
@@ -15,8 +15,6 @@ runs:
     with:
       python-version: ${{inputs.python-version}}
 
-  - name: Set up Python
-    uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
-    with:
-      python-version: ${{inputs.python-version}}
-      allow-prereleases: true
+  - name: Install Python
+    shell: bash
+    run: uv python install
