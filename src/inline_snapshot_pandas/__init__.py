@@ -2,10 +2,7 @@ from functools import wraps
 from typing import Optional
 
 import pandas.testing
-from inline_snapshot import customize_repr
-from inline_snapshot import is_snapshot
-from inline_snapshot import snapshot
-
+from inline_snapshot import customize_repr, is_snapshot, snapshot
 
 __all__ = (
     "setup",
