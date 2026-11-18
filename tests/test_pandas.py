@@ -58,6 +58,10 @@ def test_assert_equal_twice():
     assert_frame_equal(df, s)
 
 
+@pytest.mark.skipif(
+    sys.implementation.name == "pypy",
+    reason="Creating snapshots is not supported on PyPy",
+)
 def test_setup():
 
     Example(
@@ -122,6 +126,10 @@ def test_dataframp_eq():
         assert df == df
 
 
+@pytest.mark.skipif(
+    sys.implementation.name == "pypy",
+    reason="Updating snapshots is not supported on PyPy",
+)
 def test_not_equal():
     Example(
         """\
