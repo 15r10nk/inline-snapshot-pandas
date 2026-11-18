@@ -7,7 +7,7 @@ discord_id: ''
 discord_invite_id: ''
 full_coverage: true
 github_user: 15r10nk
-insider_only: true
+insider_only: false
 module_name: inline_snapshot_pandas
 project_description: pandas integration for inline-snapshot
 project_main: false
