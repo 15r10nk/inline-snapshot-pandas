@@ -3,13 +3,14 @@ import sys
 import pytest
 from inline_snapshot import snapshot
 from inline_snapshot.testing import Example
-from inline_snapshot_pandas import assert_frame_equal
-from inline_snapshot_pandas import assert_index_equal
-from inline_snapshot_pandas import assert_series_equal
+from pandas import DataFrame, Index, Series
+
+from inline_snapshot_pandas import (
+    assert_frame_equal,
+    assert_index_equal,
+    assert_series_equal,
+)
 from inline_snapshot_pandas import snapshot as pandas_snapshot
-from pandas import DataFrame
-from pandas import Index
-from pandas import Series
 
 
 def test_assert_equal():

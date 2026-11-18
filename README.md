@@ -2,11 +2,12 @@
 
 
 ![ci](https://github.com/15r10nk/inline-snapshot-pandas/actions/workflows/ci.yml/badge.svg?branch=main)
-[![Docs](https://img.shields.io/badge/docs-mkdocs-green)](https://15r10nk.github.io/inline-snapshot-pandas/)
+[![Docs](https://img.shields.io/badge/docs-mkdocs-green)](https://15r10nk.github.io/inline-snapshot-pandas/latest/)
+
 [![pypi version](https://img.shields.io/pypi/v/inline-snapshot-pandas.svg)](https://pypi.org/project/inline-snapshot-pandas/)
 ![Python Versions](https://img.shields.io/pypi/pyversions/inline-snapshot-pandas)
-![PyPI - Downloads](https://img.shields.io/pypi/dw/inline-snapshot-pandas)
-[![coverage](https://img.shields.io/badge/coverage-100%25-blue)](https://15r10nk.github.io/inline-snapshot-pandas/contributing/#coverage)
+[![PyPI - Downloads](https://img.shields.io/pypi/dw/inline-snapshot-pandas)](https://pypacktrends.com/?packages=inline-snapshot-pandas&time_range=2years)
+[![coverage](https://img.shields.io/badge/coverage-100%25-blue)](https://15r10nk.github.io/inline-snapshot-pandas/latest/contributing/#coverage)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/15r10nk)](https://github.com/sponsors/15r10nk)
 
 <!-- -8<- [end:Header] -->

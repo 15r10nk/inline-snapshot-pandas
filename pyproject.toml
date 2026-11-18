@@ -2,12 +2,8 @@
 build-backend = "hatchling.build"
 requires = ["hatchling"]
 
-[dependency-groups]
-dev = [
-  "coverage>=7.6.1",
-  "inline-snapshot[black]>=0.37.0",
-  "pytest>=8.3.5"
-]
+[tool.hatch.build.targets.wheel]
+packages = ["src/inline_snapshot_pandas"]
 
 [project]
 authors = [
@@ -37,23 +33,38 @@ readme = "README.md"
 requires-python = ">=3.9"
 version = "0.2.0"
 
+[dependency-groups]
+cog = [
+  "cogapp>=3.4.1",
+]
+dev = [
+  "coverage>=7.6.1",
+  "inline-snapshot[black]>=0.37.0",
+  "pytest>=8.3.5",
+  "pandas-stubs",
+  "commitizen==4.16.5; python_version >= '3.10'",
+  "scriv==1.8.0; python_version >= '3.10'",
+]
+
 [project.urls]
 Documentation = "https://github.com/15r10nk/inline-snapshot-pandas#readme"
 Issues = "https://github.com/15r10nk/inline-snapshot-pandas/issues"
 Source = "https://github.com/15r10nk/inline-snapshot-pandas"
 
 [tool.black]
-target-version = ["py38"]
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
 
 [tool.commitizen]
-changelog_incremental = true
 major_version_zero = true
 tag_format = "v$major.$minor.$patch$prerelease"
-update_changelog_on_bump = true
-version_files = [
-  "src/inline_snapshot_pandas/__init__.py:version"
-]
+version_scheme = "semver2"
 version_provider = "pep621"
+
+[tool.scriv]
+format = "md"
 
 [tool.coverage.paths]
 inline_snapshot_pandas = ["src/inline_snapshot_pandas", "*/inline-snapshot-pandas/src/inline_snapshot_pandas"]
@@ -67,44 +78,57 @@ exclude_lines = [
 ]
 
 [tool.coverage.run]
+source = ["inline_snapshot_pandas"]
 branch = true
 data_file = "$TOP/.coverage"
 omit = [
   "src/inline_snapshot_pandas/__about__.py"
 ]
 parallel = true
-source_pkgs = ["inline_snapshot_pandas", "tests"]
 
-[tool.hatch.envs.cov]
-python = "3.12"
-
-[tool.hatch.envs.cov.scripts]
-github = [
-  "- rm htmlcov/*",
-  "gh run download -n html-report -D htmlcov",
-  "xdg-open htmlcov/index.html"
+[tool.hatch.envs.default]
+scripts.test = "pytest {args:tests}"
+dependencies = [
+  "pytest",
+  "pytest-xdist"
 ]
+
+[tool.hatch.envs.hatch-test]
+extra-dependencies = ["inline-snapshot[black]"]
+dependencies = [
+  "coverage[toml]>=6.5",
+  "coverage-enable-subprocess",
+  "pytest",
+  "pytest-xdist"
+]
+env-vars.TOP = "{root}"
+default-args = ["tests"]
+scripts.run = "coverage run -m pytest {args}"
+
+[[tool.hatch.envs.hatch-test.matrix]]
+python = ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+
 
 [tool.hatch.envs.docs]
 dependencies = [
+  "mike>=2",
   "mkdocs>=1.4.2",
   "mkdocs-material[imaging]>=8.5.10",
   "mkdocstrings>=0.19.0"
 ]
-scripts.serve = ["mkdocs serve {args}"]
+scripts.build = "mkdocs build {args}"
+scripts.deploy = "mike {args}"
+scripts.serve = "mkdocs serve {args}"
 
-[tool.hatch.envs.hatch-test]
+
+[tool.hatch.envs.cov]
+dependencies = ["coverage[toml]>=6.5"]
+detached = true
 env-vars.TOP = "{root}"
-extra-dependencies = ["inline-snapshot[black]"]
-
-[tool.hatch.envs.hatch-test.scripts]
-cov-combine = "coverage combine"
-cov-report = [
+scripts.test = [
+  "- coverage erase",
+  "hatch test --cover-quiet {args}",
+  "coverage combine",
   "coverage html",
-  "coverage report --fail-under 100"
+  "coverage report  --fail-under 100 "
 ]
-run = "pytest{env:HATCH_TEST_ARGS:} {args}"
-run-cov = "coverage run -m pytest{env:HATCH_TEST_ARGS:} {args}"
-
-[tool.hatch.version]
-path = "src/inline_snapshot_pandas/__init__.py"
