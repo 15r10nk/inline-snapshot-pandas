@@ -3,8 +3,8 @@ from typing import Optional
 
 import pandas.testing
 from inline_snapshot import customize_repr
+from inline_snapshot import is_snapshot
 from inline_snapshot import snapshot
-from inline_snapshot._snapshot.generic_value import GenericValue
 
 
 __all__ = (
@@ -36,7 +36,7 @@ def make_assert_equal(data_type, assert_equal, repr_function):
     original = data_type.__eq__
 
     def new_eq(a, b):
-        if isinstance(b, (GenericValue, Wrapper)):
+        if is_snapshot(b) or isinstance(b, Wrapper):
             return NotImplemented
         return original(a, b)
 

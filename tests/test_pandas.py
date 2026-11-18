@@ -1,7 +1,7 @@
 import sys
 
+import pytest
 from inline_snapshot import snapshot
-from inline_snapshot.extra import raises
 from inline_snapshot.testing import Example
 from inline_snapshot_pandas import assert_frame_equal
 from inline_snapshot_pandas import assert_index_equal
@@ -110,17 +110,14 @@ def test_assert_equal():
             }
         ),
         returncode=1,
+        outcomes={"passed": 1, "errors": 1},
     )
 
 
 def test_dataframp_eq():
     df = DataFrame({"col0": [1, 2], "col1": [1, 5j], "col3": ["a", "b"]})
 
-    with raises(
-        snapshot(
-            "ValueError: The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all()."
-        )
-    ):
+    with pytest.raises(ValueError, match="The truth value of a DataFrame is ambiguous"):
         assert df == df
 
 
@@ -142,6 +139,7 @@ def test_assert_equal():
     )
 """
     ).run_inline(
+        reported_categories={"fix"},
         raises=(
             snapshot(
                 """\
@@ -167,7 +165,7 @@ DataFrame.iloc[:, 0] (column name="col0") values are different (50.0 %)
 [right]: [1, 3]\
 """
             )
-        )
+        ),
     ).run_inline(
         ["--inline-snapshot=fix"],
         changed_files=snapshot(
