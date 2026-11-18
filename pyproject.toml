@@ -22,7 +22,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy"
 ]
 dependencies = [
-  "pandas",
+  "pandas>=2.3.3",
   "inline-snapshot>=0.37.0"
 ]
 description = 'pandas integration for inline-snapshot'
@@ -41,7 +41,7 @@ dev = [
   "coverage>=7.6.1",
   "inline-snapshot[black]>=0.37.0",
   "pytest>=8.3.5",
-  "pandas-stubs",
+  "pandas-stubs>=2.2.2.240807",
   "commitizen==4.16.5; python_version >= '3.10'",
   "scriv==1.8.0; python_version >= '3.10'",
 ]
