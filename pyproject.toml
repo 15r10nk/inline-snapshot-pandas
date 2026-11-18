@@ -5,13 +5,13 @@ requires = ["hatchling"]
 [dependency-groups]
 dev = [
   "coverage>=7.6.1",
-  "inline-snapshot[black]>=0.31.1",
+  "inline-snapshot[black]>=0.37.0",
   "pytest>=8.3.5"
 ]
 
 [project]
 authors = [
-  {name = "Frank Hoffmann", email = "15r10nk@polarbit.de"}
+  { name = "Frank Hoffmann", email = "15r10nk@polarbit.de" }
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -27,7 +27,7 @@ classifiers = [
 ]
 dependencies = [
   "pandas",
-  "inline-snapshot>=0.31.0"
+  "inline-snapshot>=0.37.0"
 ]
 description = 'pandas integration for inline-snapshot'
 keywords = []
@@ -94,8 +94,8 @@ dependencies = [
 scripts.serve = ["mkdocs serve {args}"]
 
 [tool.hatch.envs.hatch-test]
-extra-dependencies = ["inline-snapshot[black]"]
 env-vars.TOP = "{root}"
+extra-dependencies = ["inline-snapshot[black]"]
 
 [tool.hatch.envs.hatch-test.scripts]
 cov-combine = "coverage combine"
